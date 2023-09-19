@@ -1,0 +1,15 @@
+# Remove files in job output directory from git, but keep the directory
+output/**
+!output/README.md
+
+# Remove files in libs directory from git, but keep the directory
+libs/**
+!libs/README.md
+
+# Ignore Gradle build output directory
+.gradle
+**/build/
+!src/**/build/
+
+# Exclude JetBrains Intellij files
+/.idea/

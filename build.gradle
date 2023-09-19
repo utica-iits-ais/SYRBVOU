@@ -1,0 +1,79 @@
+import java.nio.file.Paths
+
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.1.1'
+    id 'io.spring.dependency-management' version '1.1.0'
+}
+
+group 'edu.utica'
+version '1.0'
+sourceCompatibility = 17
+
+def job = 'SYRBVOU'
+def oneup = '9999999'
+def dbProps = {
+    Properties properties = new Properties()
+    Paths.get(System.properties.'user.home','.credentials','userTest.properties').withInputStream {
+        properties.load(it)
+    }
+    return properties
+}.call()
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    implementation 'org.springframework.integration:spring-integration-sftp:6.1.1'
+
+    implementation files('libs/ojdbc8.jar')
+    implementation files('libs/gurjbif.jar')
+
+    implementation 'com.opencsv:opencsv:5.7.1'
+    implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+
+    compileOnly 'org.projectlombok:lombok:1.18.24'
+    annotationProcessor 'org.projectlombok:lombok:1.18.24'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+}
+
+bootRun {
+    mainClass = 'com.sct.messaging.bif.banner.BannerBatchProcessor'
+    jvmArgs = [
+            '-Dbatch.processor.class=edu.utica.jobsub.ar.bloc.Syrbvou',
+            '-Dspring.profiles.active=DEV'
+    ]
+    args = [dbProps.user + '/' + dbProps.password,dbProps.url,oneup,job]
+}
+
+jar {
+    enabled false
+}
+
+bootJar {
+    mainClass = 'com.sct.messaging.bif.banner.BannerBatchProcessor'
+    enabled true
+    archiveBaseName = job
+    archiveClassifier = ''
+    archiveVersion = ''
+
+    into('buildscript') {
+        from {
+            project.buildscript.sourceFile
+        }
+    }
+
+    into('src') { srcSpec ->
+        sourceSets.each { srcSet ->
+            srcSpec.into(srcSet.name) {
+                from {
+                    srcSet.allSource
+                }
+            }
+        }
+    }
+}
+
